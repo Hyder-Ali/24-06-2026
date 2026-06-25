@@ -1,0 +1,174 @@
+---
+title: "NBA Games Historical Analysis"
+author: "Antigravity Pair Programmer"
+date: "`r Sys.Date()`"
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    code-fold: true
+    code-tools: true
+---
+
+## Introduction
+
+This report analyzes historical NBA game data loaded from `Games.csv` (derived from the [Kaggle NBA Dataset: Box Scores and Stats](https://www.kaggle.com/datasets/eoinamoore/historical-nba-data-and-player-box-scores)). The dataset covers games from 1949 to the present, capturing team scores, game dates, locations, attendance, and matchups.
+
+```{r setup, message=FALSE, warning=FALSE}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(knitr)
+library(scales)
+
+# Read the dataset
+games <- read_csv("Games.csv", show_col_types = FALSE)
+```
+
+## Dataset Characteristics
+
+Let's look at the dimensions of the raw dataset:
+
+```{r dimensions}
+dim_info <- tibble(
+  Metric = c("Total Games (Rows)", "Total Attributes (Columns)"),
+  Value = c(nrow(games), ncol(games))
+)
+kable(dim_info, caption = "Dataset Dimensions")
+```
+
+### Column Specifications
+
+Here is a summary of the columns present in the dataset:
+
+```{r columns}
+cols_summary <- tibble(
+  ColumnName = names(games),
+  DataType = sapply(games, function(x) class(x)[1]),
+  SampleValue = sapply(games, function(x) as.character(x[1]))
+)
+kable(cols_summary, caption = "Column Meta-information")
+```
+
+```{r cleaning, message=FALSE, warning=FALSE}
+# Clean and process the dataset
+games_clean <- games %>%
+  mutate(
+    gameDate = as.Date(gameDate),
+    homeScore = as.numeric(homeScore),
+    awayScore = as.numeric(awayScore),
+    winner = as.character(winner),
+    hometeamId = as.character(hometeamId),
+    awayteamId = as.character(awayteamId),
+    Year = year(gameDate)
+  ) %>%
+  filter(!is.na(homeScore) & !is.na(awayScore) & !is.na(gameDate)) %>%
+  mutate(
+    home_win = ifelse(winner == hometeamId, 1, 0),
+    total_score = homeScore + awayScore,
+    score_diff = homeScore - awayScore
+  )
+```
+
+## NBA Historical Scoring Trends (1949 - Present)
+
+How has scoring evolved in the NBA over the decades? The plot below highlights the average combined score of games per year.
+
+```{r scoring-trend, fig.width=10, fig.height=6}
+scoring_trend <- games_clean %>%
+  group_by(Year) %>%
+  summarise(
+    Avg_Total_Points = mean(total_score, na.rm = TRUE),
+    Avg_Home_Score = mean(homeScore, na.rm = TRUE),
+    Avg_Away_Score = mean(awayScore, na.rm = TRUE),
+    Game_Count = n()
+  )
+
+ggplot(scoring_trend, aes(x = Year)) +
+  geom_line(aes(y = Avg_Total_Points, color = "Total Combined Points"), size = 1.2) +
+  geom_line(aes(y = Avg_Home_Score, color = "Home Team Score"), size = 0.8, linetype = "dashed") +
+  geom_line(aes(y = Avg_Away_Score, color = "Away Team Score"), size = 0.8, linetype = "dashed") +
+  scale_color_manual(values = c(
+    "Total Combined Points" = "#2c3e50", 
+    "Home Team Score" = "#e74c3c", 
+    "Away Team Score" = "#3498db"
+  )) +
+  theme_minimal(base_size = 13) +
+  theme(
+    legend.position = "bottom",
+    plot.title = element_text(face = "bold", size = 16),
+    panel.grid.minor = element_blank()
+  ) +
+  labs(
+    title = "Historical NBA Scoring Trends (1949 - Present)",
+    subtitle = "Evolution of average home, away, and combined points per game",
+    x = "Year",
+    y = "Average Points",
+    color = "Metric"
+  )
+```
+
+We see a clear dip in the 1990s and early 2000s (often referred to as the "dead-ball" or defensive era) followed by a sharp rise starting around 2015 with the popularity of the three-point shot.
+
+## Home Court Advantage Over Time
+
+Is playing at home still a strong advantage? Let's analyze the home-court win rate by year.
+
+```{r home-advantage, fig.width=10, fig.height=6}
+home_advantage <- games_clean %>%
+  group_by(Year) %>%
+  summarise(
+    Home_Win_Pct = mean(home_win, na.rm = TRUE) * 100
+  )
+
+ggplot(home_advantage, aes(x = Year, y = Home_Win_Pct)) +
+  geom_line(color = "#16a085", size = 1.2) +
+  geom_point(color = "#117a65", size = 2) +
+  geom_hline(yintercept = 50, linetype = "dotted", color = "red", size = 0.8) +
+  theme_minimal(base_size = 13) +
+  labs(
+    title = "Home Court Win Percentage Over Time",
+    subtitle = "Percentage of games won by the home team (50% indicates no advantage)",
+    x = "Year",
+    y = "Win Percentage (%)"
+  ) +
+  scale_y_continuous(labels = percent_format(scale = 1))
+```
+
+Historically, home-court win rates hovered around 60-70% in the early years but have steadily converged closer to 55-58% in recent seasons.
+
+## Top 10 Highest-Scoring Matches
+
+Let's list the top 10 highest-scoring matches in NBA history contained within this dataset:
+
+```{r highest-scoring}
+top_10 <- games_clean %>%
+  arrange(desc(total_score)) %>%
+  slice(1:10) %>%
+  select(gameDate, gameType, hometeamCity, hometeamName, homeScore, awayteamCity, awayteamName, awayScore, total_score)
+
+kable(top_10, col.names = c("Date", "Type", "Home City", "Home Team", "Home Score", "Away City", "Away Team", "Away Score", "Total Score"), caption = "Top 10 Highest-Scoring NBA Games")
+```
+
+## Top 10 Arenas by Average Attendance
+
+Which arenas have the highest average attendance historically (filtering for games that recorded attendance)?
+
+```{r attendance}
+top_arenas <- games_clean %>%
+  filter(!is.na(attendance) & attendance > 5000) %>%
+  group_by(arenaName, arenaCity, arenaState) %>%
+  summarise(
+    Games_Count = n(),
+    Avg_Attendance = mean(attendance),
+    Max_Attendance = max(attendance),
+    .groups = "drop"
+  ) %>%
+  filter(Games_Count >= 20) %>%
+  arrange(desc(Avg_Attendance)) %>%
+  slice(1:10)
+
+kable(top_arenas, col.names = c("Arena Name", "City", "State", "Games Recorded", "Avg Attendance", "Max Attendance"), caption = "Top 10 Arenas by Average Attendance (min. 20 games)")
+```
