@@ -64,7 +64,7 @@ games_clean <- games %>%
     awayteamId = as.character(awayteamId),
     Year = year(gameDate)
   ) %>%
-  filter(!is.na(homeScore) & !is.na(awayScore) & !is.na(gameDate)) %>%
+  filter(!is.na(homeScore) & !is.na(awayScore) & !is.na(gameDate) & homeScore > 0 & awayScore > 0) %>%
   mutate(
     home_win = ifelse(winner == hometeamId, 1, 0),
     total_score = homeScore + awayScore,
@@ -172,3 +172,138 @@ top_arenas <- games_clean %>%
 
 kable(top_arenas, col.names = c("Arena Name", "City", "State", "Games Recorded", "Avg Attendance", "Max Attendance"), caption = "Top 10 Arenas by Average Attendance (min. 20 games)")
 ```
+
+## NBA Scorigami Analysis
+
+A **Scorigami** is a concept (popularized by sports writer Jon Bois) describing a final scoreline that has **never occurred before** in a league's history. Because scores cluster heavily around the league average (currently ~110-115 points per team), scorelines in this range are common, while extremely lopsided, low-scoring, or high-scoring outcomes are rare and establish new Scorigami points.
+
+Here, we calculate and plot the historical record of unique scorelines in the NBA from 1946 to 2026.
+
+```{r scorigami-prep, message=FALSE, warning=FALSE}
+# Setup scorigami data
+min_s <- 15
+max_s <- 190
+
+# 1. Home vs Visitor Score combinations
+home_visitor_scores <- games_clean %>%
+  filter(homeScore >= min_s & homeScore <= max_s & awayScore >= min_s & awayScore <= max_s) %>%
+  group_by(homeScore, awayScore) %>%
+  summarise(
+    Count = n(),
+    First_Date = min(gameDate),
+    Last_Date = max(gameDate),
+    .groups = "drop"
+  )
+
+# 2. Winner vs Loser Score combinations (w >= l)
+winner_loser_scores <- games_clean %>%
+  filter(homeScore >= min_s & homeScore <= max_s & awayScore >= min_s & awayScore <= max_s) %>%
+  mutate(
+    WinnerScore = pmax(homeScore, awayScore),
+    LoserScore = pmin(homeScore, awayScore)
+  ) %>%
+  group_by(WinnerScore, LoserScore) %>%
+  summarise(
+    Count = n(),
+    First_Date = min(gameDate),
+    Last_Date = max(gameDate),
+    .groups = "drop"
+  )
+```
+
+### Scorigami Statistics
+
+* **Total Unique Home/Visitor Scores**: `r nrow(home_visitor_scores)`
+* **Total Unique Winner/Loser Scores**: `r nrow(winner_loser_scores)`
+* **Theoretical Winner/Loser Combinations (Scores 15 to 190)**: `r ( (max_s - min_s + 1) * (max_s - min_s + 2) ) / 2`
+* **Scorigami Density (Winner/Loser)**: `r round(nrow(winner_loser_scores) / (((max_s - min_s + 1) * (max_s - min_s + 2)) / 2) * 100, 2)`% of possible scores filled.
+
+### 1. Home Score vs. Visitor Score Grid
+
+In this chart, home-team wins are plotted in the lower-right half, and visitor-team wins are in the upper-left half. The diagonal line represents a tie score (which cannot occur in the NBA).
+
+```{r scorigami-hv-plot, fig.width=10, fig.height=9, message=FALSE, warning=FALSE}
+ggplot(home_visitor_scores, aes(x = homeScore, y = awayScore, fill = Count)) +
+  geom_tile(width = 0.9, height = 0.9) +
+  scale_fill_viridis_c(
+    option = "plasma",
+    trans = "log10",
+    labels = comma_format(),
+    name = "Occurrences\n(Log Scale)"
+  ) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "white", alpha = 0.4, size = 0.6) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.background = element_rect(fill = "#0f172a", color = NA),
+    plot.background = element_rect(fill = "#0f172a", color = NA),
+    panel.grid.major = element_line(color = "#1e293b", size = 0.2),
+    panel.grid.minor = element_blank(),
+    text = element_text(family = "sans", color = "#f8fafc"),
+    axis.text = element_text(color = "#94a3b8"),
+    plot.title = element_text(face = "bold", size = 15, color = "#f8fafc"),
+    plot.subtitle = element_text(color = "#94a3b8", size = 11),
+    legend.text = element_text(color = "#f8fafc"),
+    legend.title = element_text(color = "#f8fafc", size = 10, face = "bold"),
+    aspect.ratio = 1
+  ) +
+  labs(
+    title = "NBA Scorigami Grid: Home vs. Visitor Scores",
+    subtitle = "Visualizing all unique final scores in NBA history (1946 - 2026)",
+    x = "Home Points",
+    y = "Visitor Points"
+  ) +
+  scale_x_continuous(breaks = seq(20, 190, 20), limits = c(15, 190)) +
+  scale_y_continuous(breaks = seq(20, 190, 20), limits = c(15, 190))
+```
+
+### 2. Winner Score vs. Loser Score Grid
+
+Plotting by Winner score vs. Loser score shifts all outcomes to the lower-right triangle (since Winner $\ge$ Loser), concentrating the "glowing nebula" of standard scorelines.
+
+```{r scorigami-wl-plot, fig.width=10, fig.height=9, message=FALSE, warning=FALSE}
+ggplot(winner_loser_scores, aes(x = WinnerScore, y = LoserScore, fill = Count)) +
+  geom_tile(width = 0.9, height = 0.9) +
+  scale_fill_viridis_c(
+    option = "plasma",
+    trans = "log10",
+    labels = comma_format(),
+    name = "Occurrences\n(Log Scale)"
+  ) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "white", alpha = 0.4, size = 0.6) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.background = element_rect(fill = "#0f172a", color = NA),
+    plot.background = element_rect(fill = "#0f172a", color = NA),
+    panel.grid.major = element_line(color = "#1e293b", size = 0.2),
+    panel.grid.minor = element_blank(),
+    text = element_text(family = "sans", color = "#f8fafc"),
+    axis.text = element_text(color = "#94a3b8"),
+    plot.title = element_text(face = "bold", size = 15, color = "#f8fafc"),
+    plot.subtitle = element_text(color = "#94a3b8", size = 11),
+    legend.text = element_text(color = "#f8fafc"),
+    legend.title = element_text(color = "#f8fafc", size = 10, face = "bold"),
+    aspect.ratio = 1
+  ) +
+  labs(
+    title = "NBA Scorigami Grid: Winner vs. Loser Scores",
+    subtitle = "Consolidating all unique scorelines under winner-loser coordinates",
+    x = "Winner Points",
+    y = "Loser Points"
+  ) +
+  scale_x_continuous(breaks = seq(20, 190, 20), limits = c(15, 190)) +
+  scale_y_continuous(breaks = seq(20, 190, 20), limits = c(15, 190))
+```
+
+### Historical Milestones & Recent Scorigamis
+
+The earliest recorded game in this dataset is from November 1946. Let's find the most recently established Scorigamis (the last 5 unique winner-loser score combinations that happened for the first time):
+
+```{r recent-scorigamis}
+recent_scorigamis <- winner_loser_scores %>%
+  arrange(desc(First_Date)) %>%
+  slice(1:5) %>%
+  select(First_Date, WinnerScore, LoserScore, Count)
+
+kable(recent_scorigamis, col.names = c("Establish Date", "Winner Score", "Loser Score", "Total Games with Score to Date"), caption = "Top 5 Most Recently Established NBA Scorigamis")
+```
+
