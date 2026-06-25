@@ -225,150 +225,159 @@ stats_by_year <- tibble(Year = 1946:2026) %>%
 unique_hv_count <- nrow(home_visitor_scores)
 ```
 
-<!-- HTML Layout for the Poster -->
-<div style="background-color: #f3f4f6; padding: 2rem; border-radius: 12px; border: 1px solid #e5e7eb; font-family: 'Outfit', sans-serif; color: #0f172a; margin-top: 2rem;">
-  
-  <!-- Header Row -->
-  <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e5e7eb; padding-bottom: 1.25rem; margin-bottom: 1.5rem;">
-    <div>
-      <h1 style="font-size: 3.2rem; font-weight: 800; margin: 0; color: #1a2035; letter-spacing: -0.04em; font-family: 'Outfit', sans-serif; border: none; padding: 0;">NBA Scorigami</h1>
-      <p style="font-size: 1rem; color: #4b5563; max-width: 650px; margin-top: 0.5rem; line-height: 1.45; font-family: 'Inter', sans-serif;">
-        <strong>Scorigami</strong> in sport is a final score that has never happened before in a sport or league's history. 
-        The poster below shows all unique scores in the NBA from 1946 to 2026.
-      </p>
-    </div>
-    <div style="text-align: right; font-size: 0.8rem; color: #6b7280; line-height: 1.5; font-family: 'Inter', sans-serif;">
-      <strong>DESIGN REFERENCE:</strong> Alex Varlamov<br>
-      <strong>DATA:</strong> kaggle.com (Games.csv)<br>
-      <strong>REPLICATED BY:</strong> Antigravity Pair Programmer
-    </div>
-  </div>
+<!-- HTML Layout for the Poster using Pandoc Fenced Divs for styling wrapper blocks -->
 
-  <!-- Insets and Stats Area -->
-  <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; margin-bottom: 2rem;">
-    <!-- Unique Scores Stats Card -->
-    <div style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-      <span style="font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; font-family: 'Inter', sans-serif;">Unique Scores (H vs. V)</span>
-      <span style="font-size: 3.4rem; font-weight: 800; color: #1e1b4b; margin: 0.5rem 0; font-family: 'Outfit', sans-serif;">`r unique_hv_count`</span>
-      <span style="font-size: 0.85rem; color: #4b5563; font-weight: 500; font-family: 'Inter', sans-serif;">Years: 1946 - 2026</span>
-    </div>
-    
-    <!-- Mini Charts Container -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-      <!-- Mini Chart 1: Unique Scores per Year -->
-      <div style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-        <h4 style="font-size: 0.75rem; margin-bottom: 0.5rem; text-transform: uppercase; color: #4b5563; font-weight: 700; font-family: 'Inter', sans-serif; letter-spacing: 0.05em;">Unique Scores per Year</h4>
-        ```{r mini-chart-new, fig.width=4.5, fig.height=1.8, echo=FALSE, message=FALSE, warning=FALSE}
-        ggplot(stats_by_year, aes(x = Year, y = new_scores_count)) +
-          geom_area(fill = "#94a3b8", color = "#475569", alpha = 0.8, size = 0.5) +
-          theme_minimal(base_size = 9) +
-          theme(
-            panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            axis.title = element_blank(),
-            axis.text.y = element_text(size = 7, color = "#64748b"),
-            axis.text.x = element_text(size = 7, color = "#64748b")
-          ) +
-          scale_x_continuous(breaks = c(1950, 1975, 2000, 2026))
-        ```
-      </div>
-      
-      <!-- Mini Chart 2: Cumulative Unique Scores -->
-      <div style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-        <h4 style="font-size: 0.75rem; margin-bottom: 0.5rem; text-transform: uppercase; color: #4b5563; font-weight: 700; font-family: 'Inter', sans-serif; letter-spacing: 0.05em;">Cumulative Unique Scores</h4>
-        ```{r mini-chart-cumulative, fig.width=4.5, fig.height=1.8, echo=FALSE, message=FALSE, warning=FALSE}
-        ggplot(stats_by_year, aes(x = Year, y = cumulative_scores)) +
-          geom_area(fill = "#94a3b8", color = "#475569", alpha = 0.8, size = 0.5) +
-          theme_minimal(base_size = 9) +
-          theme(
-            panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            axis.title = element_blank(),
-            axis.text.y = element_text(size = 7, color = "#64748b"),
-            axis.text.x = element_text(size = 7, color = "#64748b")
-          ) +
-          scale_x_continuous(breaks = c(1950, 1975, 2000, 2026)) +
-          scale_y_continuous(labels = comma_format())
-        ```
-      </div>
-    </div>
-  </div>
+::: {style="background-color: #f3f4f6; padding: 2rem; border-radius: 12px; border: 1px solid #e5e7eb; font-family: 'Outfit', sans-serif; color: #0f172a; margin-top: 2rem;"}
   
-  <!-- Main Grid Plot Container -->
-  <div style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; overflow: hidden;">
-    ```{r main-scorigami-plot, fig.width=11, fig.height=11, echo=FALSE, message=FALSE, warning=FALSE}
-    # Create complete grid space
-    all_cells <- expand.grid(
-      homeScore = min_s:max_s,
-      awayScore = min_s:max_s
-    )
-    
-    # Setup manual annotations for extreme games
-    # X corresponds to home score, Y corresponds to visitor/away score
-    annotations_df <- tibble(
-      x = c(184, 175, 171, 161, 158, 18, 46, 54, 59, 82, 84, 48, 48, 48),
-      y = c(186, 176, 166, 168, 162, 19, 48, 46, 48, 48, 46, 42, 44, 38),
-      label = c("DEN - DET", "LAC - SAC", "SAS - MIL", "ATL - CHI", "DEN - GSW", "MNL - FTW", "BOS - NYK", "PHW - BOS", "CHS - NYK", "NYK - TRH", "NYK - PHW", "WSC - PIT", "BOS - PIT", "BOS - WSC"),
-      nudge_x = c(5, 5, 5, 5, 5, -7, -7, -6, -5, 6, 6, -6, -6, -6),
-      nudge_y = c(5, 5, -5, 5, -5, 5, -5, -5, 5, 5, -5, -5, 5, -5)
-    )
-    
-    # Custom Theme Matching Poster Style
-    theme_poster <- theme_minimal(base_family = "sans") +
-      theme(
-        plot.background = element_rect(fill = "#ffffff", color = NA),
-        panel.background = element_rect(fill = "#ffffff", color = NA),
-        panel.grid.major = element_line(color = "#f3f4f6", size = 0.4),
-        panel.grid.minor = element_blank(),
-        axis.title = element_text(face = "bold", size = 12, color = "#1f2937"),
-        axis.text = element_text(size = 9, color = "#4b5563"),
-        plot.title = element_text(face = "bold", size = 18, color = "#111827", hjust = 0.5),
-        plot.subtitle = element_text(size = 11, color = "#4b5563", hjust = 0.5),
-        legend.position = "right",
-        legend.title = element_text(face = "bold", size = 9, color = "#374151"),
-        legend.text = element_text(size = 8, color = "#374151"),
-        aspect.ratio = 1
-      )
-    
-    ggplot() +
-      # Draw background grid borders (unoccurred grid tiles)
-      geom_tile(data = all_cells, aes(x = homeScore, y = awayScore), fill = "#ffffff", color = "#f3f4f6", size = 0.05) +
-      # Overlay occurred cells with count heatmap fill
-      geom_tile(data = home_visitor_scores, aes(x = homeScore, y = awayScore, fill = Count), color = "#f3f4f6", size = 0.05) +
-      # Color gradient (plasma heatmap)
-      scale_fill_viridis_c(
-        option = "plasma",
-        trans = "log10",
-        labels = comma_format(),
-        name = "Occurrences\n(Log Scale)"
-      ) +
-      # Dash diagonal tie-line reference
-      geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red", alpha = 0.4, size = 0.6) +
-      # Line connectors for annotations
-      geom_segment(
-        data = annotations_df,
-        aes(x = x, y = y, xend = x + nudge_x * 0.7, yend = y + nudge_y * 0.7),
-        color = "#4b5563",
-        size = 0.35
-      ) +
-      # Text labels for annotations
-      geom_text(
-        data = annotations_df,
-        aes(x = x + nudge_x, y = y + nudge_y, label = label),
-        size = 2.8,
-        color = "#0f172a",
-        fontface = "bold",
-        family = "sans"
-      ) +
-      theme_poster +
-      labs(
-        title = "Home PTS (X) vs. Visitor PTS (Y)",
-        subtitle = "Detailed view of the 5,120 unique scorelines in history with key outliers highlighted",
-        x = "Home Points",
-        y = "Visitor Points"
-      ) +
-      scale_x_continuous(breaks = seq(20, 180, 20), limits = c(15, 192)) +
-      scale_y_continuous(breaks = seq(20, 180, 20), limits = c(15, 192))
-    ```
-  </div>
+<!-- Header Row -->
+::: {style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e5e7eb; padding-bottom: 1.25rem; margin-bottom: 1.5rem;"}
+<div>
+  <h1 style="font-size: 3.2rem; font-weight: 800; margin: 0; color: #1a2035; letter-spacing: -0.04em; font-family: 'Outfit', sans-serif; border: none; padding: 0;">NBA Scorigami</h1>
+  <p style="font-size: 1rem; color: #4b5563; max-width: 650px; margin-top: 0.5rem; line-height: 1.45; font-family: 'Inter', sans-serif;">
+    <strong>Scorigami</strong> in sport is a final score that has never happened before in a sport or league's history. 
+    The poster below shows all unique scores in the NBA from 1946 to 2026.
+  </p>
 </div>
+<div style="text-align: right; font-size: 0.8rem; color: #6b7280; line-height: 1.5; font-family: 'Inter', sans-serif;">
+  <strong>DESIGN REFERENCE:</strong> Alex Varlamov<br>
+  <strong>DATA:</strong> kaggle.com (Games.csv)<br>
+  <strong>REPLICATED BY:</strong> Antigravity Pair Programmer
+</div>
+:::
+
+<!-- Insets and Stats Area -->
+::: {style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; margin-bottom: 2rem;"}
+
+<!-- Unique Scores Stats Card -->
+::: {style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);"}
+<span style="font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; font-family: 'Inter', sans-serif;">Unique Scores (H vs. V)</span>
+<span style="font-size: 3.4rem; font-weight: 800; color: #1e1b4b; margin: 0.5rem 0; font-family: 'Outfit', sans-serif;">`r unique_hv_count`</span>
+<span style="font-size: 0.85rem; color: #4b5563; font-weight: 500; font-family: 'Inter', sans-serif;">Years: 1946 - 2026</span>
+:::
+    
+<!-- Mini Charts Container -->
+::: {style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;"}
+
+<!-- Mini Chart 1: Unique Scores per Year -->
+::: {style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);"}
+<h4 style="font-size: 0.75rem; margin-bottom: 0.5rem; text-transform: uppercase; color: #4b5563; font-weight: 700; font-family: 'Inter', sans-serif; letter-spacing: 0.05em;">Unique Scores per Year</h4>
+
+```{r mini-chart-new, fig.width=4.5, fig.height=1.8, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(stats_by_year, aes(x = Year, y = new_scores_count)) +
+  geom_area(fill = "#94a3b8", color = "#475569", alpha = 0.8, size = 0.5) +
+  theme_minimal(base_size = 9) +
+  theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.title = element_blank(),
+    axis.text.y = element_text(size = 7, color = "#64748b"),
+    axis.text.x = element_text(size = 7, color = "#64748b")
+  ) +
+  scale_x_continuous(breaks = c(1950, 1975, 2000, 2026))
+```
+:::
+      
+<!-- Mini Chart 2: Cumulative Unique Scores -->
+::: {style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);"}
+<h4 style="font-size: 0.75rem; margin-bottom: 0.5rem; text-transform: uppercase; color: #4b5563; font-weight: 700; font-family: 'Inter', sans-serif; letter-spacing: 0.05em;">Cumulative Unique Scores</h4>
+
+```{r mini-chart-cumulative, fig.width=4.5, fig.height=1.8, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(stats_by_year, aes(x = Year, y = cumulative_scores)) +
+  geom_area(fill = "#94a3b8", color = "#475569", alpha = 0.8, size = 0.5) +
+  theme_minimal(base_size = 9) +
+  theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.title = element_blank(),
+    axis.text.y = element_text(size = 7, color = "#64748b"),
+    axis.text.x = element_text(size = 7, color = "#64748b")
+  ) +
+  scale_x_continuous(breaks = c(1950, 1975, 2000, 2026)) +
+  scale_y_continuous(labels = comma_format())
+```
+:::
+
+:::
+
+:::
+  
+<!-- Main Grid Plot Container -->
+::: {style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; overflow: hidden;"}
+
+```{r main-scorigami-plot, fig.width=11, fig.height=11, echo=FALSE, message=FALSE, warning=FALSE}
+# Create complete grid space
+all_cells <- expand.grid(
+  homeScore = min_s:max_s,
+  awayScore = min_s:max_s
+)
+
+# Setup manual annotations for extreme games
+# X corresponds to home score, Y corresponds to visitor/away score
+annotations_df <- tibble(
+  x = c(184, 175, 171, 161, 158, 18, 46, 54, 59, 82, 84, 48, 48, 48),
+  y = c(186, 176, 166, 168, 162, 19, 48, 46, 48, 48, 46, 42, 44, 38),
+  label = c("DEN - DET", "LAC - SAC", "SAS - MIL", "ATL - CHI", "DEN - GSW", "MNL - FTW", "BOS - NYK", "PHW - BOS", "CHS - NYK", "NYK - TRH", "NYK - PHW", "WSC - PIT", "BOS - PIT", "BOS - WSC"),
+  nudge_x = c(5, 5, 5, 5, 5, -7, -7, -6, -5, 6, 6, -6, -6, -6),
+  nudge_y = c(5, 5, -5, 5, -5, 5, -5, -5, 5, 5, -5, -5, 5, -5)
+)
+
+# Custom Theme Matching Poster Style
+theme_poster <- theme_minimal(base_family = "sans") +
+  theme(
+    plot.background = element_rect(fill = "#ffffff", color = NA),
+    panel.background = element_rect(fill = "#ffffff", color = NA),
+    panel.grid.major = element_line(color = "#f3f4f6", size = 0.4),
+    panel.grid.minor = element_blank(),
+    axis.title = element_text(face = "bold", size = 12, color = "#1f2937"),
+    axis.text = element_text(size = 9, color = "#4b5563"),
+    plot.title = element_text(face = "bold", size = 18, color = "#111827", hjust = 0.5),
+    plot.subtitle = element_text(size = 11, color = "#4b5563", hjust = 0.5),
+    legend.position = "right",
+    legend.title = element_text(face = "bold", size = 9, color = "#374151"),
+    legend.text = element_text(size = 8, color = "#374151"),
+    aspect.ratio = 1
+  )
+
+ggplot() +
+  # Draw background grid borders (unoccurred grid tiles)
+  geom_tile(data = all_cells, aes(x = homeScore, y = awayScore), fill = "#ffffff", color = "#f3f4f6", size = 0.05) +
+  # Overlay occurred cells with count heatmap fill
+  geom_tile(data = home_visitor_scores, aes(x = homeScore, y = awayScore, fill = Count), color = "#f3f4f6", size = 0.05) +
+  # Color gradient (plasma heatmap)
+  scale_fill_viridis_c(
+    option = "plasma",
+    trans = "log10",
+    labels = comma_format(),
+    name = "Occurrences\n(Log Scale)"
+  ) +
+  # Dash diagonal tie-line reference
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red", alpha = 0.4, size = 0.6) +
+  # Line connectors for annotations
+  geom_segment(
+    data = annotations_df,
+    aes(x = x, y = y, xend = x + nudge_x * 0.7, yend = y + nudge_y * 0.7),
+    color = "#4b5563",
+    size = 0.35
+  ) +
+  # Text labels for annotations
+  geom_text(
+    data = annotations_df,
+    aes(x = x + nudge_x, y = y + nudge_y, label = label),
+    size = 2.8,
+    color = "#0f172a",
+    fontface = "bold",
+    family = "sans"
+  ) +
+  theme_poster +
+  labs(
+    title = "Home PTS (X) vs. Visitor PTS (Y)",
+    subtitle = "Detailed view of the 5,120 unique scorelines in history with key outliers highlighted",
+    x = "Home Points",
+    y = "Visitor Points"
+  ) +
+  scale_x_continuous(breaks = seq(20, 180, 20), limits = c(15, 192)) +
+  scale_y_continuous(breaks = seq(20, 180, 20), limits = c(15, 192))
+```
+:::
+
+:::
