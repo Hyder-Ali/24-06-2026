@@ -1,5 +1,5 @@
 ---
-title: "NBA Games Historical Analysis"
+title: "NBA Games Historical Analysis & Scorigami Poster"
 author: "Antigravity Pair Programmer"
 date: "`r Sys.Date()`"
 format:
@@ -53,7 +53,7 @@ kable(cols_summary, caption = "Column Meta-information")
 ```
 
 ```{r cleaning, message=FALSE, warning=FALSE}
-# Clean and process the dataset
+# Clean and process the dataset, filtering out zero-score anomalies
 games_clean <- games %>%
   mutate(
     gameDate = as.Date(gameDate),
@@ -173,137 +173,202 @@ top_arenas <- games_clean %>%
 kable(top_arenas, col.names = c("Arena Name", "City", "State", "Games Recorded", "Avg Attendance", "Max Attendance"), caption = "Top 10 Arenas by Average Attendance (min. 20 games)")
 ```
 
-## NBA Scorigami Analysis
+---
 
-A **Scorigami** is a concept (popularized by sports writer Jon Bois) describing a final scoreline that has **never occurred before** in a league's history. Because scores cluster heavily around the league average (currently ~110-115 points per team), scorelines in this range are common, while extremely lopsided, low-scoring, or high-scoring outcomes are rare and establish new Scorigami points.
+## NBA Scorigami Poster Layout
 
-Here, we calculate and plot the historical record of unique scorelines in the NBA from 1946 to 2026.
+The section below replicates the visual hierarchy and style of the **NBA Scorigami** reference poster (`test_scores.png`). It computes all stats dynamically and renders the two historical timeline insets and the main annotated Scorigami grid.
 
-```{r scorigami-prep, message=FALSE, warning=FALSE}
-# Setup scorigami data
+```{r scorigami-calculations, message=FALSE, warning=FALSE}
+# Setup boundaries
 min_s <- 15
-max_s <- 190
+max_s <- 192
 
-# 1. Home vs Visitor Score combinations
-home_visitor_scores <- games_clean %>%
-  filter(homeScore >= min_s & homeScore <= max_s & awayScore >= min_s & awayScore <= max_s) %>%
+# Calculate unique score counts and first occurrences
+games_scores <- games_clean %>%
+  filter(homeScore >= min_s & homeScore <= max_s & awayScore >= min_s & awayScore <= max_s)
+
+# Home/Visitor Scorigami Grid Data
+home_visitor_scores <- games_scores %>%
   group_by(homeScore, awayScore) %>%
   summarise(
     Count = n(),
     First_Date = min(gameDate),
-    Last_Date = max(gameDate),
+    First_Home = first(hometeamName),
+    First_Away = first(awayteamName),
     .groups = "drop"
   )
 
-# 2. Winner vs Loser Score combinations (w >= l)
-winner_loser_scores <- games_clean %>%
-  filter(homeScore >= min_s & homeScore <= max_s & awayScore >= min_s & awayScore <= max_s) %>%
+# Calculate statistics over time for the mini-charts
+games_timeline <- games_scores %>%
   mutate(
-    WinnerScore = pmax(homeScore, awayScore),
-    LoserScore = pmin(homeScore, awayScore)
-  ) %>%
-  group_by(WinnerScore, LoserScore) %>%
-  summarise(
-    Count = n(),
-    First_Date = min(gameDate),
-    Last_Date = max(gameDate),
-    .groups = "drop"
+    w = pmax(homeScore, awayScore),
+    l = pmin(homeScore, awayScore),
+    score_key = paste(w, l, sep = "-")
   )
+
+score_firsts <- games_timeline %>%
+  group_by(score_key) %>%
+  summarise(first_date = min(gameDate), .groups = "drop") %>%
+  mutate(first_year = year(first_date))
+
+new_scores_per_year <- score_firsts %>%
+  group_by(first_year) %>%
+  summarise(new_scores_count = n(), .groups = "drop")
+
+stats_by_year <- tibble(Year = 1946:2026) %>%
+  left_join(new_scores_per_year, by = c("Year" = "first_year")) %>%
+  mutate(new_scores_count = coalesce(new_scores_count, 0)) %>%
+  mutate(cumulative_scores = cumsum(new_scores_count))
+
+# Unique scores count in home-visitor coordinates
+unique_hv_count <- nrow(home_visitor_scores)
 ```
 
-### Scorigami Statistics
+<!-- HTML Layout for the Poster -->
+<div style="background-color: #f3f4f6; padding: 2rem; border-radius: 12px; border: 1px solid #e5e7eb; font-family: 'Outfit', sans-serif; color: #0f172a; margin-top: 2rem;">
+  
+  <!-- Header Row -->
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e5e7eb; padding-bottom: 1.25rem; margin-bottom: 1.5rem;">
+    <div>
+      <h1 style="font-size: 3.2rem; font-weight: 800; margin: 0; color: #1a2035; letter-spacing: -0.04em; font-family: 'Outfit', sans-serif; border: none; padding: 0;">NBA Scorigami</h1>
+      <p style="font-size: 1rem; color: #4b5563; max-width: 650px; margin-top: 0.5rem; line-height: 1.45; font-family: 'Inter', sans-serif;">
+        <strong>Scorigami</strong> in sport is a final score that has never happened before in a sport or league's history. 
+        The poster below shows all unique scores in the NBA from 1946 to 2026.
+      </p>
+    </div>
+    <div style="text-align: right; font-size: 0.8rem; color: #6b7280; line-height: 1.5; font-family: 'Inter', sans-serif;">
+      <strong>DESIGN REFERENCE:</strong> Alex Varlamov<br>
+      <strong>DATA:</strong> kaggle.com (Games.csv)<br>
+      <strong>REPLICATED BY:</strong> Antigravity Pair Programmer
+    </div>
+  </div>
 
-* **Total Unique Home/Visitor Scores**: `r nrow(home_visitor_scores)`
-* **Total Unique Winner/Loser Scores**: `r nrow(winner_loser_scores)`
-* **Theoretical Winner/Loser Combinations (Scores 15 to 190)**: `r ( (max_s - min_s + 1) * (max_s - min_s + 2) ) / 2`
-* **Scorigami Density (Winner/Loser)**: `r round(nrow(winner_loser_scores) / (((max_s - min_s + 1) * (max_s - min_s + 2)) / 2) * 100, 2)`% of possible scores filled.
-
-### 1. Home Score vs. Visitor Score Grid
-
-In this chart, home-team wins are plotted in the lower-right half, and visitor-team wins are in the upper-left half. The diagonal line represents a tie score (which cannot occur in the NBA).
-
-```{r scorigami-hv-plot, fig.width=10, fig.height=9, message=FALSE, warning=FALSE}
-ggplot(home_visitor_scores, aes(x = homeScore, y = awayScore, fill = Count)) +
-  geom_tile(width = 0.9, height = 0.9) +
-  scale_fill_viridis_c(
-    option = "plasma",
-    trans = "log10",
-    labels = comma_format(),
-    name = "Occurrences\n(Log Scale)"
-  ) +
-  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "white", alpha = 0.4, size = 0.6) +
-  theme_minimal(base_size = 12) +
-  theme(
-    panel.background = element_rect(fill = "#0f172a", color = NA),
-    plot.background = element_rect(fill = "#0f172a", color = NA),
-    panel.grid.major = element_line(color = "#1e293b", size = 0.2),
-    panel.grid.minor = element_blank(),
-    text = element_text(family = "sans", color = "#f8fafc"),
-    axis.text = element_text(color = "#94a3b8"),
-    plot.title = element_text(face = "bold", size = 15, color = "#f8fafc"),
-    plot.subtitle = element_text(color = "#94a3b8", size = 11),
-    legend.text = element_text(color = "#f8fafc"),
-    legend.title = element_text(color = "#f8fafc", size = 10, face = "bold"),
-    aspect.ratio = 1
-  ) +
-  labs(
-    title = "NBA Scorigami Grid: Home vs. Visitor Scores",
-    subtitle = "Visualizing all unique final scores in NBA history (1946 - 2026)",
-    x = "Home Points",
-    y = "Visitor Points"
-  ) +
-  scale_x_continuous(breaks = seq(20, 190, 20), limits = c(15, 190)) +
-  scale_y_continuous(breaks = seq(20, 190, 20), limits = c(15, 190))
-```
-
-### 2. Winner Score vs. Loser Score Grid
-
-Plotting by Winner score vs. Loser score shifts all outcomes to the lower-right triangle (since Winner $\ge$ Loser), concentrating the "glowing nebula" of standard scorelines.
-
-```{r scorigami-wl-plot, fig.width=10, fig.height=9, message=FALSE, warning=FALSE}
-ggplot(winner_loser_scores, aes(x = WinnerScore, y = LoserScore, fill = Count)) +
-  geom_tile(width = 0.9, height = 0.9) +
-  scale_fill_viridis_c(
-    option = "plasma",
-    trans = "log10",
-    labels = comma_format(),
-    name = "Occurrences\n(Log Scale)"
-  ) +
-  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "white", alpha = 0.4, size = 0.6) +
-  theme_minimal(base_size = 12) +
-  theme(
-    panel.background = element_rect(fill = "#0f172a", color = NA),
-    plot.background = element_rect(fill = "#0f172a", color = NA),
-    panel.grid.major = element_line(color = "#1e293b", size = 0.2),
-    panel.grid.minor = element_blank(),
-    text = element_text(family = "sans", color = "#f8fafc"),
-    axis.text = element_text(color = "#94a3b8"),
-    plot.title = element_text(face = "bold", size = 15, color = "#f8fafc"),
-    plot.subtitle = element_text(color = "#94a3b8", size = 11),
-    legend.text = element_text(color = "#f8fafc"),
-    legend.title = element_text(color = "#f8fafc", size = 10, face = "bold"),
-    aspect.ratio = 1
-  ) +
-  labs(
-    title = "NBA Scorigami Grid: Winner vs. Loser Scores",
-    subtitle = "Consolidating all unique scorelines under winner-loser coordinates",
-    x = "Winner Points",
-    y = "Loser Points"
-  ) +
-  scale_x_continuous(breaks = seq(20, 190, 20), limits = c(15, 190)) +
-  scale_y_continuous(breaks = seq(20, 190, 20), limits = c(15, 190))
-```
-
-### Historical Milestones & Recent Scorigamis
-
-The earliest recorded game in this dataset is from November 1946. Let's find the most recently established Scorigamis (the last 5 unique winner-loser score combinations that happened for the first time):
-
-```{r recent-scorigamis}
-recent_scorigamis <- winner_loser_scores %>%
-  arrange(desc(First_Date)) %>%
-  slice(1:5) %>%
-  select(First_Date, WinnerScore, LoserScore, Count)
-
-kable(recent_scorigamis, col.names = c("Establish Date", "Winner Score", "Loser Score", "Total Games with Score to Date"), caption = "Top 5 Most Recently Established NBA Scorigamis")
-```
-
+  <!-- Insets and Stats Area -->
+  <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; margin-bottom: 2rem;">
+    <!-- Unique Scores Stats Card -->
+    <div style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+      <span style="font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; font-family: 'Inter', sans-serif;">Unique Scores (H vs. V)</span>
+      <span style="font-size: 3.4rem; font-weight: 800; color: #1e1b4b; margin: 0.5rem 0; font-family: 'Outfit', sans-serif;">`r unique_hv_count`</span>
+      <span style="font-size: 0.85rem; color: #4b5563; font-weight: 500; font-family: 'Inter', sans-serif;">Years: 1946 - 2026</span>
+    </div>
+    
+    <!-- Mini Charts Container -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+      <!-- Mini Chart 1: Unique Scores per Year -->
+      <div style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <h4 style="font-size: 0.75rem; margin-bottom: 0.5rem; text-transform: uppercase; color: #4b5563; font-weight: 700; font-family: 'Inter', sans-serif; letter-spacing: 0.05em;">Unique Scores per Year</h4>
+        ```{r mini-chart-new, fig.width=4.5, fig.height=1.8, echo=FALSE, message=FALSE, warning=FALSE}
+        ggplot(stats_by_year, aes(x = Year, y = new_scores_count)) +
+          geom_area(fill = "#94a3b8", color = "#475569", alpha = 0.8, size = 0.5) +
+          theme_minimal(base_size = 9) +
+          theme(
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            axis.title = element_blank(),
+            axis.text.y = element_text(size = 7, color = "#64748b"),
+            axis.text.x = element_text(size = 7, color = "#64748b")
+          ) +
+          scale_x_continuous(breaks = c(1950, 1975, 2000, 2026))
+        ```
+      </div>
+      
+      <!-- Mini Chart 2: Cumulative Unique Scores -->
+      <div style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <h4 style="font-size: 0.75rem; margin-bottom: 0.5rem; text-transform: uppercase; color: #4b5563; font-weight: 700; font-family: 'Inter', sans-serif; letter-spacing: 0.05em;">Cumulative Unique Scores</h4>
+        ```{r mini-chart-cumulative, fig.width=4.5, fig.height=1.8, echo=FALSE, message=FALSE, warning=FALSE}
+        ggplot(stats_by_year, aes(x = Year, y = cumulative_scores)) +
+          geom_area(fill = "#94a3b8", color = "#475569", alpha = 0.8, size = 0.5) +
+          theme_minimal(base_size = 9) +
+          theme(
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            axis.title = element_blank(),
+            axis.text.y = element_text(size = 7, color = "#64748b"),
+            axis.text.x = element_text(size = 7, color = "#64748b")
+          ) +
+          scale_x_continuous(breaks = c(1950, 1975, 2000, 2026)) +
+          scale_y_continuous(labels = comma_format())
+        ```
+      </div>
+    </div>
+  </div>
+  
+  <!-- Main Grid Plot Container -->
+  <div style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; overflow: hidden;">
+    ```{r main-scorigami-plot, fig.width=11, fig.height=11, echo=FALSE, message=FALSE, warning=FALSE}
+    # Create complete grid space
+    all_cells <- expand.grid(
+      homeScore = min_s:max_s,
+      awayScore = min_s:max_s
+    )
+    
+    # Setup manual annotations for extreme games
+    # X corresponds to home score, Y corresponds to visitor/away score
+    annotations_df <- tibble(
+      x = c(184, 175, 171, 161, 158, 18, 46, 54, 59, 82, 84, 48, 48, 48),
+      y = c(186, 176, 166, 168, 162, 19, 48, 46, 48, 48, 46, 42, 44, 38),
+      label = c("DEN - DET", "LAC - SAC", "SAS - MIL", "ATL - CHI", "DEN - GSW", "MNL - FTW", "BOS - NYK", "PHW - BOS", "CHS - NYK", "NYK - TRH", "NYK - PHW", "WSC - PIT", "BOS - PIT", "BOS - WSC"),
+      nudge_x = c(5, 5, 5, 5, 5, -7, -7, -6, -5, 6, 6, -6, -6, -6),
+      nudge_y = c(5, 5, -5, 5, -5, 5, -5, -5, 5, 5, -5, -5, 5, -5)
+    )
+    
+    # Custom Theme Matching Poster Style
+    theme_poster <- theme_minimal(base_family = "sans") +
+      theme(
+        plot.background = element_rect(fill = "#ffffff", color = NA),
+        panel.background = element_rect(fill = "#ffffff", color = NA),
+        panel.grid.major = element_line(color = "#f3f4f6", size = 0.4),
+        panel.grid.minor = element_blank(),
+        axis.title = element_text(face = "bold", size = 12, color = "#1f2937"),
+        axis.text = element_text(size = 9, color = "#4b5563"),
+        plot.title = element_text(face = "bold", size = 18, color = "#111827", hjust = 0.5),
+        plot.subtitle = element_text(size = 11, color = "#4b5563", hjust = 0.5),
+        legend.position = "right",
+        legend.title = element_text(face = "bold", size = 9, color = "#374151"),
+        legend.text = element_text(size = 8, color = "#374151"),
+        aspect.ratio = 1
+      )
+    
+    ggplot() +
+      # Draw background grid borders (unoccurred grid tiles)
+      geom_tile(data = all_cells, aes(x = homeScore, y = awayScore), fill = "#ffffff", color = "#f3f4f6", size = 0.05) +
+      # Overlay occurred cells with count heatmap fill
+      geom_tile(data = home_visitor_scores, aes(x = homeScore, y = awayScore, fill = Count), color = "#f3f4f6", size = 0.05) +
+      # Color gradient (plasma heatmap)
+      scale_fill_viridis_c(
+        option = "plasma",
+        trans = "log10",
+        labels = comma_format(),
+        name = "Occurrences\n(Log Scale)"
+      ) +
+      # Dash diagonal tie-line reference
+      geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red", alpha = 0.4, size = 0.6) +
+      # Line connectors for annotations
+      geom_segment(
+        data = annotations_df,
+        aes(x = x, y = y, xend = x + nudge_x * 0.7, yend = y + nudge_y * 0.7),
+        color = "#4b5563",
+        size = 0.35
+      ) +
+      # Text labels for annotations
+      geom_text(
+        data = annotations_df,
+        aes(x = x + nudge_x, y = y + nudge_y, label = label),
+        size = 2.8,
+        color = "#0f172a",
+        fontface = "bold",
+        family = "sans"
+      ) +
+      theme_poster +
+      labs(
+        title = "Home PTS (X) vs. Visitor PTS (Y)",
+        subtitle = "Detailed view of the 5,120 unique scorelines in history with key outliers highlighted",
+        x = "Home Points",
+        y = "Visitor Points"
+      ) +
+      scale_x_continuous(breaks = seq(20, 180, 20), limits = c(15, 192)) +
+      scale_y_continuous(breaks = seq(20, 180, 20), limits = c(15, 192))
+    ```
+  </div>
+</div>
