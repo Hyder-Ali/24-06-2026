@@ -1,0 +1,24 @@
+# History files
+.Rhistory
+.Rapp.history
+
+# Session Data files
+.RData
+.RData-write-double
+
+# User-specific files
+.Ruserdata
+
+# RStudio files
+.Rproj.user/
+
+# Quarto output caches and system directories
+.quarto/
+
+# Python caches and notebook checkpoints
+__pycache__/
+.ipynb_checkpoints/
+
+# OS metadata
+.DS_Store
+Thumbs.db
