@@ -22,6 +22,7 @@ library(ggplot2)
 library(lubridate)
 library(knitr)
 library(scales)
+library(plotly)
 
 # Read the dataset
 games <- read_csv("Games.csv", show_col_types = FALSE)
@@ -110,8 +111,6 @@ ggplot(scoring_trend, aes(x = Year)) +
   )
 ```
 
-We see a clear dip in the 1990s and early 2000s (often referred to as the "dead-ball" or defensive era) followed by a sharp rise starting around 2015 with the popularity of the three-point shot.
-
 ## Home Court Advantage Over Time
 
 Is playing at home still a strong advantage? Let's analyze the home-court win rate by year.
@@ -199,6 +198,21 @@ home_visitor_scores <- games_scores %>%
     .groups = "drop"
   )
 
+# Winner/Loser Scorigami Grid Data
+winner_loser_scores <- games_scores %>%
+  mutate(
+    WinnerScore = pmax(homeScore, awayScore),
+    LoserScore = pmin(homeScore, awayScore)
+  ) %>%
+  group_by(WinnerScore, LoserScore) %>%
+  summarise(
+    Count = n(),
+    First_Date = min(gameDate),
+    First_Home = first(hometeamName),
+    First_Away = first(awayteamName),
+    .groups = "drop"
+  )
+
 # Calculate statistics over time for the mini-charts
 games_timeline <- games_scores %>%
   mutate(
@@ -221,8 +235,9 @@ stats_by_year <- tibble(Year = 1946:2026) %>%
   mutate(new_scores_count = coalesce(new_scores_count, 0)) %>%
   mutate(cumulative_scores = cumsum(new_scores_count))
 
-# Unique scores count in home-visitor coordinates
+# Unique scores count
 unique_hv_count <- nrow(home_visitor_scores)
+unique_wl_count <- nrow(winner_loser_scores)
 ```
 
 <!-- HTML Layout for the Poster using Pandoc Fenced Divs for styling wrapper blocks -->
@@ -235,7 +250,7 @@ unique_hv_count <- nrow(home_visitor_scores)
   <h1 style="font-size: 3.2rem; font-weight: 800; margin: 0; color: #1a2035; letter-spacing: -0.04em; font-family: 'Outfit', sans-serif; border: none; padding: 0;">NBA Scorigami</h1>
   <p style="font-size: 1rem; color: #4b5563; max-width: 650px; margin-top: 0.5rem; line-height: 1.45; font-family: 'Inter', sans-serif;">
     <strong>Scorigami</strong> in sport is a final score that has never happened before in a sport or league's history. 
-    The poster below shows all unique scores in the NBA from 1946 to 2026.
+    The poster below shows all unique scores in the NBA from 1946 to 2026. Hover over the main grid tabs to switch views!
   </p>
 </div>
 <div style="text-align: right; font-size: 0.8rem; color: #6b7280; line-height: 1.5; font-family: 'Inter', sans-serif;">
@@ -250,8 +265,8 @@ unique_hv_count <- nrow(home_visitor_scores)
 
 <!-- Unique Scores Stats Card -->
 ::: {style="background-color: #ffffff; border: 1px solid #d1cfc9; border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.03);"}
-<span style="font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; font-family: 'Inter', sans-serif;">Unique Scores (H vs. V)</span>
-<span style="font-size: 3.4rem; font-weight: 800; color: #1e1b4b; margin: 0.5rem 0; font-family: 'Outfit', sans-serif;">`r unique_hv_count`</span>
+<span style="font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; font-family: 'Inter', sans-serif;">Unique Scores (Winner/Loser)</span>
+<span style="font-size: 3.4rem; font-weight: 800; color: #1e1b4b; margin: 0.5rem 0; font-family: 'Outfit', sans-serif;">`r unique_wl_count`</span>
 <span style="font-size: 0.85rem; color: #4b5563; font-weight: 500; font-family: 'Inter', sans-serif;">Years: 1946 - 2026</span>
 :::
     
@@ -301,22 +316,15 @@ ggplot(stats_by_year, aes(x = Year, y = cumulative_scores)) +
 
 :::
   
-<!-- Main Grid Plot Container -->
-::: {style="background-color: #ffffff; border: 1px solid #d1cfc9; border-radius: 10px; padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.03); display: flex; justify-content: center; align-items: center; overflow: hidden;"}
+<!-- Main Grid Plot Container using Quarto Tabsets for reorganizing view -->
+::: {style="background-color: #ffffff; border: 1px solid #d1cfc9; border-radius: 10px; padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.03); display: block; overflow: hidden;"}
 
-```{r main-scorigami-plot, fig.width=11.5, fig.height=11.5, echo=FALSE, message=FALSE, warning=FALSE}
-# Create complete grid space
-all_cells <- expand.grid(
-  homeScore = min_s:max_s,
-  awayScore = min_s:max_s
-)
+::: {.panel-tabset}
 
-# Split occurred scores to style single occurrences differently
-scores_once <- home_visitor_scores %>% filter(Count == 1)
-scores_many <- home_visitor_scores %>% filter(Count > 1)
+### Home PTS vs. Visitor PTS
 
+```{r hv-plot, fig.width=11, fig.height=11, echo=FALSE, message=FALSE, warning=FALSE}
 # Setup manual annotations for extreme games on both sides of the diagonal
-# X corresponds to home score, Y corresponds to visitor/away score
 annotations_df <- tibble(
   x = c(184, 175, 171, 161, 158, 18, 46, 54, 59, 82, 84, 48, 48, 48, 120, 130, 108, 104, 102, 78, 72, 78, 78, 72),
   y = c(186, 176, 166, 168, 162, 19, 48, 46, 48, 48, 46, 42, 44, 38, 156, 150, 154, 152, 144, 126, 132, 124, 112, 118),
@@ -325,60 +333,68 @@ annotations_df <- tibble(
   nudge_y = c(6, 6, -6, 6, -6, 6, -6, -6, 5, 5, -5, -5, 5, -5, 6, 6, 6, 6, 6, 6, 6, -6, 6, -6)
 )
 
-# Custom Theme Matching Poster Style
+# Filter occurred scores for Plotly (avoiding drawing 30k empty cells as trace nodes)
+scores_once_hv <- home_visitor_scores %>% 
+  filter(Count == 1) %>%
+  mutate(
+    tooltip_text = paste0(
+      "Score: ", homeScore, " - ", awayScore, "<br>",
+      "Occurrences: 1 (Scorigami Established!)<br>",
+      "First Game: ", format(First_Date, "%b %d, %Y"), "<br>",
+      "Matchup: ", First_Home, " vs ", First_Away
+    )
+  )
+
+scores_many_hv <- home_visitor_scores %>% 
+  filter(Count > 1) %>%
+  mutate(
+    tooltip_text = paste0(
+      "Score: ", homeScore, " - ", awayScore, "<br>",
+      "Occurrences: ", Count, "<br>",
+      "First Game: ", format(First_Date, "%b %d, %Y"), "<br>",
+      "Matchup: ", First_Home, " vs ", First_Away
+    )
+  )
+
+# Custom theme
 theme_poster <- theme_minimal(base_family = "sans") +
   theme(
     plot.background = element_rect(fill = "#fbfaf7", color = NA),
     panel.background = element_rect(fill = "#fbfaf7", color = NA),
-    panel.grid.major = element_blank(), # Drawn manually below
+    panel.grid.major = element_line(color = "#eaeaea", size = 0.45), 
     panel.grid.minor = element_blank(),
     axis.title = element_text(face = "bold", size = 11, color = "#1a2035"),
     axis.text = element_text(size = 9, color = "#4b5563"),
-    plot.title = element_text(face = "bold", size = 18, color = "#1a2035", hjust = 0.5),
-    plot.subtitle = element_text(size = 11, color = "#4b5563", hjust = 0.5),
+    plot.title = element_text(face = "bold", size = 15, color = "#1a2035", hjust = 0.5),
+    plot.subtitle = element_text(size = 10, color = "#4b5563", hjust = 0.5),
     legend.position = "right",
     legend.title = element_text(face = "bold", size = 9, color = "#1a2035"),
     legend.text = element_text(size = 8, color = "#4b5563"),
     aspect.ratio = 1
   )
 
-ggplot() +
-  # 1. Draw background grid borders (unoccurred grid tiles)
-  geom_tile(data = all_cells, aes(x = homeScore, y = awayScore), fill = "#ffffff", color = "#eaeaea", size = 0.05) +
-  # 2. Overlay single occurrences (black/dark grey squares)
-  geom_tile(data = scores_once, aes(x = homeScore, y = awayScore), fill = "#18181b", color = "#eaeaea", size = 0.05) +
-  # 3. Overlay multiple occurrences (glowing plasma heatmap scale)
-  geom_tile(data = scores_many, aes(x = homeScore, y = awayScore, fill = Count), color = "#eaeaea", size = 0.05) +
-  # Heatmap color gradient (Plasma scale)
+p_hv <- ggplot() +
+  # Draw occurred scores (single)
+  geom_tile(data = scores_once_hv, aes(x = homeScore, y = awayScore, text = tooltip_text), fill = "#18181b", color = "#eaeaea", size = 0.05) +
+  # Draw occurred scores (many)
+  geom_tile(data = scores_many_hv, aes(x = homeScore, y = awayScore, fill = Count, text = tooltip_text), color = "#eaeaea", size = 0.05) +
+  # Heatmap color scale
   scale_fill_viridis_c(
     option = "plasma",
     trans = "log10",
     labels = comma_format(),
-    name = "Occurrences\n(Log Scale)"
+    name = "Occurrences"
   ) +
-  # 4. Draw major grid lines (every 10 points) on top of the tiles
-  annotate(
-    "segment", 
-    x = min_s, xend = max_s, 
-    y = seq(20, 190, 10), yend = seq(20, 190, 10), 
-    color = "#d1cfc9", size = 0.25
-  ) +
-  annotate(
-    "segment", 
-    x = seq(20, 190, 10), xend = seq(20, 190, 10), 
-    y = min_s, yend = max_s, 
-    color = "#d1cfc9", size = 0.25
-  ) +
-  # 5. Dash diagonal tie-line reference
+  # Dash diagonal reference line
   geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "grey50", alpha = 0.6, size = 0.45) +
-  # 6. Line connectors for annotations
+  # Connectors for annotations
   geom_segment(
     data = annotations_df,
     aes(x = x, y = y, xend = x + nudge_x * 0.75, yend = y + nudge_y * 0.75),
     color = "#1f2937",
     size = 0.35
   ) +
-  # 7. Text labels for annotations
+  # Text labels for annotations
   geom_text(
     data = annotations_df,
     aes(x = x + nudge_x, y = y + nudge_y, label = label),
@@ -389,14 +405,121 @@ ggplot() +
   ) +
   theme_poster +
   labs(
-    title = "Home PTS (X) vs. Visitor PTS (Y)",
-    subtitle = "Replicating the original poster grid design with exact guidelines and labels",
-    x = "Home Points",
-    y = "Visitor Points"
+    title = "Home Score vs. Visitor Score Scorigami",
+    x = "Home Team Score",
+    y = "Visitor Team Score"
   ) +
   scale_x_continuous(breaks = seq(20, 180, 20), limits = c(15, 192)) +
   scale_y_continuous(breaks = seq(20, 180, 20), limits = c(15, 192))
+
+# Convert to plotly
+ggplotly(p_hv, tooltip = "text") %>%
+  layout(
+    margin = list(l = 50, r = 50, b = 50, t = 50),
+    hoverlabel = list(bgcolor = "white", font = list(family = "sans-serif", size = 12))
+  )
 ```
+
+### Winner PTS vs. Loser PTS
+
+```{r wl-plot, fig.width=11, fig.height=11, echo=FALSE, message=FALSE, warning=FALSE}
+# Map annotations to Winner/Loser coordinates
+annotations_wl <- annotations_df %>%
+  mutate(
+    Winner = pmax(x, y),
+    Loser = pmin(x, y),
+    nudge_x = ifelse(nudge_x < 0, nudge_x, nudge_x),
+    nudge_y = ifelse(nudge_y > 0, -nudge_y, nudge_y) # Nudge below the diagonal
+  ) %>%
+  distinct(Winner, Loser, .keep_all = TRUE)
+
+# Filter occurred scores for Winner vs Loser
+scores_once_wl <- winner_loser_scores %>% 
+  filter(Count == 1) %>%
+  mutate(
+    tooltip_text = paste0(
+      "Winner Score: ", WinnerScore, "<br>",
+      "Loser Score: ", LoserScore, "<br>",
+      "Occurrences: 1 (Scorigami Established!)<br>",
+      "First Game: ", format(First_Date, "%b %d, %Y"), "<br>",
+      "Matchup: ", First_Home, " vs ", First_Away
+    )
+  )
+
+scores_many_wl <- winner_loser_scores %>% 
+  filter(Count > 1) %>%
+  mutate(
+    tooltip_text = paste0(
+      "Winner Score: ", WinnerScore, "<br>",
+      "Loser Score: ", LoserScore, "<br>",
+      "Occurrences: ", Count, "<br>",
+      "First Game: ", format(First_Date, "%b %d, %Y"), "<br>",
+      "Matchup: ", First_Home, " vs ", First_Away
+    )
+  )
+
+p_wl <- ggplot() +
+  # Draw occurred scores (single)
+  geom_tile(data = scores_once_wl, aes(x = WinnerScore, y = LoserScore, text = tooltip_text), fill = "#18181b", color = "#eaeaea", size = 0.05) +
+  # Draw occurred scores (many)
+  geom_tile(data = scores_many_wl, aes(x = WinnerScore, y = LoserScore, fill = Count, text = tooltip_text), color = "#eaeaea", size = 0.05) +
+  # Heatmap color scale
+  scale_fill_viridis_c(
+    option = "plasma",
+    trans = "log10",
+    labels = comma_format(),
+    name = "Occurrences"
+  ) +
+  # Dash diagonal tie-line reference
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "grey50", alpha = 0.6, size = 0.45) +
+  # Connectors for annotations
+  geom_segment(
+    data = annotations_wl,
+    aes(x = Winner, y = Loser, xend = Winner + nudge_x * 0.75, yend = Loser + nudge_y * 0.75),
+    color = "#1f2937",
+    size = 0.35
+  ) +
+  # Text labels for annotations
+  geom_text(
+    data = annotations_wl,
+    aes(x = Winner + nudge_x, y = Loser + nudge_y, label = label),
+    size = 2.8,
+    color = "#111827",
+    fontface = "bold",
+    family = "sans"
+  ) +
+  theme_poster +
+  labs(
+    title = "Winner Score vs. Loser Score Scorigami",
+    x = "Winning Team Score",
+    y = "Losing Team Score"
+  ) +
+  scale_x_continuous(breaks = seq(20, 180, 20), limits = c(15, 192)) +
+  scale_y_continuous(breaks = seq(20, 180, 20), limits = c(15, 192))
+
+# Convert to plotly
+ggplotly(p_wl, tooltip = "text") %>%
+  layout(
+    margin = list(l = 50, r = 50, b = 50, t = 50),
+    hoverlabel = list(bgcolor = "white", font = list(family = "sans-serif", size = 12))
+  )
+```
+
 :::
 
 :::
+
+:::
+
+### Historical Milestones & Recent Scorigamis
+
+The earliest recorded game in this dataset is from November 1946. Let's find the most recently established Scorigamis (the last 5 unique winner-loser score combinations that happened for the first time):
+
+```{r recent-scorigamis}
+recent_scorigamis <- winner_loser_scores %>%
+  arrange(desc(First_Date)) %>%
+  slice(1:5) %>%
+  select(First_Date, WinnerScore, LoserScore, Count)
+
+kable(recent_scorigamis, col.names = c("Establish Date", "Winner Score", "Loser Score", "Total Games with Score to Date"), caption = "Top 5 Most Recently Established NBA Scorigamis")
+```
