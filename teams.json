@@ -1,0 +1,282 @@
+{
+  "1": {
+    "city": "Atlanta",
+    "name": "Hawks"
+  },
+  "2": {
+    "city": "Baltimore",
+    "name": "Bullets"
+  },
+  "3": {
+    "city": "Boston",
+    "name": "Celtics"
+  },
+  "4": {
+    "city": "Brooklyn",
+    "name": "Nets"
+  },
+  "5": {
+    "city": "Buffalo",
+    "name": "Braves"
+  },
+  "6": {
+    "city": "Capital",
+    "name": "Bullets"
+  },
+  "7": {
+    "city": "Charlotte",
+    "name": "Bobcats"
+  },
+  "8": {
+    "city": "Charlotte",
+    "name": "Hornets"
+  },
+  "9": {
+    "city": "Chicago",
+    "name": "Bulls"
+  },
+  "10": {
+    "city": "Chicago",
+    "name": "Packers"
+  },
+  "11": {
+    "city": "Chicago",
+    "name": "Zephyrs"
+  },
+  "12": {
+    "city": "Cincinnati",
+    "name": "Royals"
+  },
+  "13": {
+    "city": "Cleveland",
+    "name": "Cavaliers"
+  },
+  "14": {
+    "city": "Dallas",
+    "name": "Mavericks"
+  },
+  "15": {
+    "city": "Denver",
+    "name": "Nuggets"
+  },
+  "16": {
+    "city": "Detroit",
+    "name": "Pistons"
+  },
+  "17": {
+    "city": "Ft. Wayne Zollner",
+    "name": "Pistons"
+  },
+  "18": {
+    "city": "Golden State",
+    "name": "Warriors"
+  },
+  "19": {
+    "city": "Guangzhou",
+    "name": "Loong-Lions"
+  },
+  "20": {
+    "city": "Hapoel",
+    "name": "Jerusalem B.C."
+  },
+  "21": {
+    "city": "Houston",
+    "name": "Rockets"
+  },
+  "22": {
+    "city": "Indiana",
+    "name": "Pacers"
+  },
+  "23": {
+    "city": "Kansas City",
+    "name": "Kings"
+  },
+  "24": {
+    "city": "Kansas City-Omaha",
+    "name": "Kings"
+  },
+  "25": {
+    "city": "LA",
+    "name": "Clippers"
+  },
+  "26": {
+    "city": "Los Angeles",
+    "name": "Clippers"
+  },
+  "27": {
+    "city": "Los Angeles",
+    "name": "Lakers"
+  },
+  "28": {
+    "city": "Melbourne",
+    "name": "United"
+  },
+  "29": {
+    "city": "Memphis",
+    "name": "Grizzlies"
+  },
+  "30": {
+    "city": "Miami",
+    "name": "Heat"
+  },
+  "31": {
+    "city": "Milwaukee",
+    "name": "Bucks"
+  },
+  "32": {
+    "city": "Milwaukee",
+    "name": "Hawks"
+  },
+  "33": {
+    "city": "Minneapolis",
+    "name": "Lakers"
+  },
+  "34": {
+    "city": "Minnesota",
+    "name": "Timberwolves"
+  },
+  "35": {
+    "city": "New Jersey",
+    "name": "Nets"
+  },
+  "36": {
+    "city": "New Orleans",
+    "name": "Hornets"
+  },
+  "37": {
+    "city": "New Orleans",
+    "name": "Jazz"
+  },
+  "38": {
+    "city": "New Orleans",
+    "name": "Pelicans"
+  },
+  "39": {
+    "city": "New York",
+    "name": "Knicks"
+  },
+  "40": {
+    "city": "New York",
+    "name": "Nets"
+  },
+  "41": {
+    "city": "Oklahoma City",
+    "name": "Hornets"
+  },
+  "42": {
+    "city": "Oklahoma City",
+    "name": "Thunder"
+  },
+  "43": {
+    "city": "Orlando",
+    "name": "Magic"
+  },
+  "44": {
+    "city": "Philadelphia",
+    "name": "76ers"
+  },
+  "45": {
+    "city": "Philadelphia",
+    "name": "Warriors"
+  },
+  "46": {
+    "city": "Phoenix",
+    "name": "Suns"
+  },
+  "47": {
+    "city": "Portland",
+    "name": "Trail Blazers"
+  },
+  "48": {
+    "city": "Rochester",
+    "name": "Royals"
+  },
+  "49": {
+    "city": "Sacramento",
+    "name": "Kings"
+  },
+  "50": {
+    "city": "San Antonio",
+    "name": "Spurs"
+  },
+  "51": {
+    "city": "San Diego",
+    "name": "Clippers"
+  },
+  "52": {
+    "city": "San Diego",
+    "name": "Rockets"
+  },
+  "53": {
+    "city": "San Francisco",
+    "name": "Warriors"
+  },
+  "54": {
+    "city": "Seattle",
+    "name": "SuperSonics"
+  },
+  "55": {
+    "city": "South East Melbourne",
+    "name": "Phoenix"
+  },
+  "56": {
+    "city": "St. Louis",
+    "name": "Hawks"
+  },
+  "57": {
+    "city": "Syracuse",
+    "name": "Nationals"
+  },
+  "58": {
+    "city": "Toronto",
+    "name": "Raptors"
+  },
+  "59": {
+    "city": "Tri-Cities",
+    "name": "Blackhawks"
+  },
+  "60": {
+    "city": "Utah",
+    "name": "Jazz"
+  },
+  "61": {
+    "city": "Vancouver",
+    "name": "Grizzlies"
+  },
+  "62": {
+    "city": "Washington",
+    "name": "Bullets"
+  },
+  "63": {
+    "city": "Washington",
+    "name": "Wizards"
+  },
+  "64": {
+    "city": null,
+    "name": "Stars"
+  },
+  "65": {
+    "city": null,
+    "name": "Stripes"
+  },
+  "66": {
+    "city": null,
+    "name": "Team Austin"
+  },
+  "67": {
+    "city": null,
+    "name": "Team Melo"
+  },
+  "68": {
+    "city": null,
+    "name": "Team T-Mac"
+  },
+  "69": {
+    "city": null,
+    "name": "Team Vince"
+  },
+  "70": {
+    "city": null,
+    "name": "World"
+  }
+}
