@@ -227,10 +227,10 @@ unique_hv_count <- nrow(home_visitor_scores)
 
 <!-- HTML Layout for the Poster using Pandoc Fenced Divs for styling wrapper blocks -->
 
-::: {style="background-color: #f3f4f6; padding: 2rem; border-radius: 12px; border: 1px solid #e5e7eb; font-family: 'Outfit', sans-serif; color: #0f172a; margin-top: 2rem;"}
+::: {style="background-color: #eae7e1; padding: 2rem; border-radius: 12px; border: 1px solid #d1cfc9; font-family: 'Outfit', sans-serif; color: #1a2035; margin-top: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.06);"}
   
 <!-- Header Row -->
-::: {style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e5e7eb; padding-bottom: 1.25rem; margin-bottom: 1.5rem;"}
+::: {style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #d1cfc9; padding-bottom: 1.25rem; margin-bottom: 1.5rem;"}
 <div>
   <h1 style="font-size: 3.2rem; font-weight: 800; margin: 0; color: #1a2035; letter-spacing: -0.04em; font-family: 'Outfit', sans-serif; border: none; padding: 0;">NBA Scorigami</h1>
   <p style="font-size: 1rem; color: #4b5563; max-width: 650px; margin-top: 0.5rem; line-height: 1.45; font-family: 'Inter', sans-serif;">
@@ -249,7 +249,7 @@ unique_hv_count <- nrow(home_visitor_scores)
 ::: {style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; margin-bottom: 2rem;"}
 
 <!-- Unique Scores Stats Card -->
-::: {style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);"}
+::: {style="background-color: #ffffff; border: 1px solid #d1cfc9; border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.03);"}
 <span style="font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; font-family: 'Inter', sans-serif;">Unique Scores (H vs. V)</span>
 <span style="font-size: 3.4rem; font-weight: 800; color: #1e1b4b; margin: 0.5rem 0; font-family: 'Outfit', sans-serif;">`r unique_hv_count`</span>
 <span style="font-size: 0.85rem; color: #4b5563; font-weight: 500; font-family: 'Inter', sans-serif;">Years: 1946 - 2026</span>
@@ -259,12 +259,12 @@ unique_hv_count <- nrow(home_visitor_scores)
 ::: {style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;"}
 
 <!-- Mini Chart 1: Unique Scores per Year -->
-::: {style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);"}
+::: {style="background-color: #ffffff; border: 1px solid #d1cfc9; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);"}
 <h4 style="font-size: 0.75rem; margin-bottom: 0.5rem; text-transform: uppercase; color: #4b5563; font-weight: 700; font-family: 'Inter', sans-serif; letter-spacing: 0.05em;">Unique Scores per Year</h4>
 
 ```{r mini-chart-new, fig.width=4.5, fig.height=1.8, echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(stats_by_year, aes(x = Year, y = new_scores_count)) +
-  geom_area(fill = "#94a3b8", color = "#475569", alpha = 0.8, size = 0.5) +
+  geom_area(fill = "#8b949e", color = "#475569", alpha = 0.85, size = 0.5) +
   theme_minimal(base_size = 9) +
   theme(
     panel.grid.major = element_blank(),
@@ -278,12 +278,12 @@ ggplot(stats_by_year, aes(x = Year, y = new_scores_count)) +
 :::
       
 <!-- Mini Chart 2: Cumulative Unique Scores -->
-::: {style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);"}
+::: {style="background-color: #ffffff; border: 1px solid #d1cfc9; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);"}
 <h4 style="font-size: 0.75rem; margin-bottom: 0.5rem; text-transform: uppercase; color: #4b5563; font-weight: 700; font-family: 'Inter', sans-serif; letter-spacing: 0.05em;">Cumulative Unique Scores</h4>
 
 ```{r mini-chart-cumulative, fig.width=4.5, fig.height=1.8, echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(stats_by_year, aes(x = Year, y = cumulative_scores)) +
-  geom_area(fill = "#94a3b8", color = "#475569", alpha = 0.8, size = 0.5) +
+  geom_area(fill = "#8b949e", color = "#475569", alpha = 0.85, size = 0.5) +
   theme_minimal(base_size = 9) +
   theme(
     panel.grid.major = element_blank(),
@@ -302,76 +302,95 @@ ggplot(stats_by_year, aes(x = Year, y = cumulative_scores)) +
 :::
   
 <!-- Main Grid Plot Container -->
-::: {style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; overflow: hidden;"}
+::: {style="background-color: #ffffff; border: 1px solid #d1cfc9; border-radius: 10px; padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.03); display: flex; justify-content: center; align-items: center; overflow: hidden;"}
 
-```{r main-scorigami-plot, fig.width=11, fig.height=11, echo=FALSE, message=FALSE, warning=FALSE}
+```{r main-scorigami-plot, fig.width=11.5, fig.height=11.5, echo=FALSE, message=FALSE, warning=FALSE}
 # Create complete grid space
 all_cells <- expand.grid(
   homeScore = min_s:max_s,
   awayScore = min_s:max_s
 )
 
-# Setup manual annotations for extreme games
+# Split occurred scores to style single occurrences differently
+scores_once <- home_visitor_scores %>% filter(Count == 1)
+scores_many <- home_visitor_scores %>% filter(Count > 1)
+
+# Setup manual annotations for extreme games on both sides of the diagonal
 # X corresponds to home score, Y corresponds to visitor/away score
 annotations_df <- tibble(
-  x = c(184, 175, 171, 161, 158, 18, 46, 54, 59, 82, 84, 48, 48, 48),
-  y = c(186, 176, 166, 168, 162, 19, 48, 46, 48, 48, 46, 42, 44, 38),
-  label = c("DEN - DET", "LAC - SAC", "SAS - MIL", "ATL - CHI", "DEN - GSW", "MNL - FTW", "BOS - NYK", "PHW - BOS", "CHS - NYK", "NYK - TRH", "NYK - PHW", "WSC - PIT", "BOS - PIT", "BOS - WSC"),
-  nudge_x = c(5, 5, 5, 5, 5, -7, -7, -6, -5, 6, 6, -6, -6, -6),
-  nudge_y = c(5, 5, -5, 5, -5, 5, -5, -5, 5, 5, -5, -5, 5, -5)
+  x = c(184, 175, 171, 161, 158, 18, 46, 54, 59, 82, 84, 48, 48, 48, 120, 130, 108, 104, 102, 78, 72, 78, 78, 72),
+  y = c(186, 176, 166, 168, 162, 19, 48, 46, 48, 48, 46, 42, 44, 38, 156, 150, 154, 152, 144, 126, 132, 124, 112, 118),
+  label = c("DEN - DET", "LAC - SAC", "SAS - MIL", "ATL - CHI", "DEN - GSW", "MNL - FTW", "BOS - NYK", "PHW - BOS", "CHS - NYK", "NYK - TRH", "NYK - PHW", "WSC - PIT", "BOS - PIT", "BOS - WSC", "POR - GSW", "GSW - DAL", "SAC - UTA", "PHI - NYK", "TOR - NYK", "NYK - LAL", "CLE - BOS", "GSW - LAL", "NYK - UTA", "BOS - DET"),
+  nudge_x = c(6, 6, 6, 6, 6, -7, -7, -6, -5, 6, 6, -6, -6, -6, -6, -6, -6, -6, -6, -6, -6, -6, -6, -6),
+  nudge_y = c(6, 6, -6, 6, -6, 6, -6, -6, 5, 5, -5, -5, 5, -5, 6, 6, 6, 6, 6, 6, 6, -6, 6, -6)
 )
 
 # Custom Theme Matching Poster Style
 theme_poster <- theme_minimal(base_family = "sans") +
   theme(
-    plot.background = element_rect(fill = "#ffffff", color = NA),
-    panel.background = element_rect(fill = "#ffffff", color = NA),
-    panel.grid.major = element_line(color = "#f3f4f6", size = 0.4),
+    plot.background = element_rect(fill = "#fbfaf7", color = NA),
+    panel.background = element_rect(fill = "#fbfaf7", color = NA),
+    panel.grid.major = element_blank(), # Drawn manually below
     panel.grid.minor = element_blank(),
-    axis.title = element_text(face = "bold", size = 12, color = "#1f2937"),
+    axis.title = element_text(face = "bold", size = 11, color = "#1a2035"),
     axis.text = element_text(size = 9, color = "#4b5563"),
-    plot.title = element_text(face = "bold", size = 18, color = "#111827", hjust = 0.5),
+    plot.title = element_text(face = "bold", size = 18, color = "#1a2035", hjust = 0.5),
     plot.subtitle = element_text(size = 11, color = "#4b5563", hjust = 0.5),
     legend.position = "right",
-    legend.title = element_text(face = "bold", size = 9, color = "#374151"),
-    legend.text = element_text(size = 8, color = "#374151"),
+    legend.title = element_text(face = "bold", size = 9, color = "#1a2035"),
+    legend.text = element_text(size = 8, color = "#4b5563"),
     aspect.ratio = 1
   )
 
 ggplot() +
-  # Draw background grid borders (unoccurred grid tiles)
-  geom_tile(data = all_cells, aes(x = homeScore, y = awayScore), fill = "#ffffff", color = "#f3f4f6", size = 0.05) +
-  # Overlay occurred cells with count heatmap fill
-  geom_tile(data = home_visitor_scores, aes(x = homeScore, y = awayScore, fill = Count), color = "#f3f4f6", size = 0.05) +
-  # Color gradient (plasma heatmap)
+  # 1. Draw background grid borders (unoccurred grid tiles)
+  geom_tile(data = all_cells, aes(x = homeScore, y = awayScore), fill = "#ffffff", color = "#eaeaea", size = 0.05) +
+  # 2. Overlay single occurrences (black/dark grey squares)
+  geom_tile(data = scores_once, aes(x = homeScore, y = awayScore), fill = "#18181b", color = "#eaeaea", size = 0.05) +
+  # 3. Overlay multiple occurrences (glowing plasma heatmap scale)
+  geom_tile(data = scores_many, aes(x = homeScore, y = awayScore, fill = Count), color = "#eaeaea", size = 0.05) +
+  # Heatmap color gradient (Plasma scale)
   scale_fill_viridis_c(
     option = "plasma",
     trans = "log10",
     labels = comma_format(),
     name = "Occurrences\n(Log Scale)"
   ) +
-  # Dash diagonal tie-line reference
-  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red", alpha = 0.4, size = 0.6) +
-  # Line connectors for annotations
+  # 4. Draw major grid lines (every 10 points) on top of the tiles
+  annotate(
+    "segment", 
+    x = min_s, xend = max_s, 
+    y = seq(20, 190, 10), yend = seq(20, 190, 10), 
+    color = "#d1cfc9", size = 0.25
+  ) +
+  annotate(
+    "segment", 
+    x = seq(20, 190, 10), xend = seq(20, 190, 10), 
+    y = min_s, yend = max_s, 
+    color = "#d1cfc9", size = 0.25
+  ) +
+  # 5. Dash diagonal tie-line reference
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "grey50", alpha = 0.6, size = 0.45) +
+  # 6. Line connectors for annotations
   geom_segment(
     data = annotations_df,
-    aes(x = x, y = y, xend = x + nudge_x * 0.7, yend = y + nudge_y * 0.7),
-    color = "#4b5563",
+    aes(x = x, y = y, xend = x + nudge_x * 0.75, yend = y + nudge_y * 0.75),
+    color = "#1f2937",
     size = 0.35
   ) +
-  # Text labels for annotations
+  # 7. Text labels for annotations
   geom_text(
     data = annotations_df,
     aes(x = x + nudge_x, y = y + nudge_y, label = label),
     size = 2.8,
-    color = "#0f172a",
+    color = "#111827",
     fontface = "bold",
     family = "sans"
   ) +
   theme_poster +
   labs(
     title = "Home PTS (X) vs. Visitor PTS (Y)",
-    subtitle = "Detailed view of the 5,120 unique scorelines in history with key outliers highlighted",
+    subtitle = "Replicating the original poster grid design with exact guidelines and labels",
     x = "Home Points",
     y = "Visitor Points"
   ) +
